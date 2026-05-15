@@ -1,0 +1,18 @@
+pandas>=2.0
+requests>=2.31
+urllib3>=2.0
+duckdb>=0.10
+streamlit>=1.30
+plotly>=5.18
+python-dotenv>=1.0
+
+# AI Agent dependencies
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-openai>=0.0.5
+sqlalchemy>=2.0
+duckdb-engine>=0.17.0
+
+# Development dependencies (optional)
+pytest>=8.0
+pytest-cov>=5.0

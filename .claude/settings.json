@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\pokam\\\\Desktop\\\\Canadian Housing Affordability Data Pipeline\" -Force)",
+      "Bash(Select-Object Name, FullName)"
+    ]
+  }
+}

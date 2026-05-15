@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \".\" | Where-Object { $_.Name -ne \".venv\" -and $_.Name -ne \"node_modules\" } | Select-Object Name,Mode | Format-Table -AutoSize)",
+      "PowerShell(.\\\\.venv\\\\Scripts\\\\python.exe -c \"import duckdb, duckdb_engine, sqlalchemy; print\\('duckdb', duckdb.__version__\\); print\\('duckdb_engine', duckdb_engine.__version__\\); print\\('sqlalchemy', sqlalchemy.__version__\\)\")",
+      "PowerShell(.\\\\.venv\\\\Scripts\\\\python.exe -c \"import duckdb; c = duckdb.connect\\(\\); print\\(c.execute\\(\\\\\"SELECT table_name FROM information_schema.tables WHERE table_schema='pg_catalog' AND table_name LIKE 'pg_collation%'\\\\\"\\).fetchall\\(\\)\\)\")",
+      "PowerShell(.\\\\.venv\\\\Scripts\\\\python.exe _check_pg.py)",
+      "PowerShell(.\\\\.venv\\\\Scripts\\\\python.exe -c \"import ai_agent; print\\('ai_agent OK'\\); import ast; ast.parse\\(open\\('dashboard.py', encoding='utf-8'\\).read\\(\\)\\); print\\('dashboard.py parses'\\)\")",
+      "PowerShell(.\\\\.venv\\\\Scripts\\\\python.exe -c \"import ast; ast.parse\\(open\\('dashboard.py', encoding='utf-8'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\pokam\\\\Desktop\\\\Canadian Housing Affordability Data Pipeline\" -Exclude \".venv\")",
+      "Bash(Select-Object Name, Length)",
+      "Bash(git init *)"
+    ]
+  }
+}
