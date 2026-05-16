@@ -98,11 +98,14 @@ def _clean_nhpi(df: pd.DataFrame) -> pd.DataFrame:
     # ── Sort for consistency ───────────────────────────────────
     df = df.sort_values(["date", "geo", "nhpi_type"]).reset_index(drop=True)
 
-    logger.info(
-        f"Clean data: {len(df):,} rows | "
-        f"{df['date'].min():%Y-%m} to {df['date'].max():%Y-%m} | "
-        f"{df['geo'].nunique()} geographies"
-    )
+    if len(df):
+        logger.info(
+            f"Clean data: {len(df):,} rows | "
+            f"{df['date'].min():%Y-%m} to {df['date'].max():%Y-%m} | "
+            f"{df['geo'].nunique()} geographies"
+        )
+    else:
+        logger.info("Clean data: 0 rows (empty input)")
     return df
 
 
