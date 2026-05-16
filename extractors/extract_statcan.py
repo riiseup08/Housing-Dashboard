@@ -83,7 +83,7 @@ def _clean_nhpi(df: pd.DataFrame) -> pd.DataFrame:
 
     # ── Parse dates ────────────────────────────────────────────
     # REF_DATE comes as "YYYY-MM"; convert to first-of-month date
-    df["date"] = pd.Series(pd.to_datetime(df["date"], format="%Y-%m"), dtype="datetime64[ns]")
+    df["date"] = pd.to_datetime(df["date"], format="%Y-%m")
 
     # ── Drop rows with missing index values ────────────────────
     before = len(df)
