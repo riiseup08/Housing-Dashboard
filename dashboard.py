@@ -283,7 +283,7 @@ def load_comparative_prices(geographies, nhpi_type='Total (house and land)', sta
           AND d.year >= ?
           AND d.is_month_start = TRUE
         ORDER BY g.geo_name, d.full_date
-    """, params).fetchdf()
+    """, params)
 
 
 # Geographic coordinates for mapping
@@ -361,7 +361,7 @@ def load_latest_metrics():
             JOIN dim_date d ON hp.date_key = d.date_key
         )
         SELECT 
-            (SELECT ROUND(index_value, 1)
+            (SELECT ROUND(CAST(index_value AS NUMERIC), 1)
              FROM fact_housing_prices hp
              JOIN dim_date d ON hp.date_key = d.date_key
              JOIN dim_geography g ON hp.geo_key = g.geo_key
@@ -369,7 +369,7 @@ def load_latest_metrics():
                AND hp.nhpi_type = 'Total (house and land)'
                AND d.full_date = (SELECT max_date FROM latest_date)) as canada_nhpi,
             
-            (SELECT ROUND(yoy_change_pct, 2)
+            (SELECT ROUND(CAST(yoy_change_pct AS NUMERIC), 2)
              FROM fact_housing_prices hp
              JOIN dim_date d ON hp.date_key = d.date_key
              JOIN dim_geography g ON hp.geo_key = g.geo_key
@@ -377,14 +377,14 @@ def load_latest_metrics():
                AND hp.nhpi_type = 'Total (house and land)'
                AND d.full_date = (SELECT max_date FROM latest_date)) as canada_yoy,
             
-            (SELECT ROUND(bank_rate, 2)
+            (SELECT ROUND(CAST(bank_rate AS NUMERIC), 2)
              FROM fact_interest_rates ir
              JOIN dim_date d ON ir.date_key = d.date_key
              ORDER BY d.full_date DESC
              LIMIT 1) as latest_bank_rate,
             
             (SELECT max_date FROM latest_date) as data_date
-    """).fetchdf()
+    """)
 
 
 # ============================================================
