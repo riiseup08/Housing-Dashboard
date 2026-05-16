@@ -25,8 +25,8 @@ class TestCleanNHPI:
         
         # Check types (pandas 2.0+ uses datetime64[us], older uses datetime64[ns])
         assert clean_df['date'].dtype.kind == 'M'
-        assert clean_df['index_value'].dtype == 'float64'
-        assert clean_df['geo'].dtype == 'object'
+        assert pd.api.types.is_float_dtype(clean_df['index_value'])
+        assert pd.api.types.is_string_dtype(clean_df['geo'])
     
     def test_drops_null_values(self):
         """Test that rows with null index values are removed."""
