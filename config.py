@@ -30,8 +30,19 @@ LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Database Configuration ─────────────────────────────────────
 # PostgreSQL connection for cloud deployment (e.g., Streamlit Cloud)
-# If DATABASE_URL is set, use PostgreSQL; otherwise use local DuckDB
-DATABASE_URL = os.getenv('DATABASE_URL')
+# Try to get DATABASE_URL from Streamlit secrets first, then environment variables
+DATABASE_URL = None
+try:
+    import streamlit as st
+    if hasattr(st, 'secrets') and 'DATABASE_URL' in st.secrets:
+        DATABASE_URL = st.secrets['DATABASE_URL']
+except (ImportError, FileNotFoundError, KeyError):
+    pass
+
+# Fall back to environment variable if not in Streamlit secrets
+if not DATABASE_URL:
+    DATABASE_URL = os.getenv('DATABASE_URL')
+
 DB_TYPE = 'postgresql' if DATABASE_URL else 'duckdb'
 
 # For local development with DuckDB

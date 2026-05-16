@@ -121,11 +121,22 @@ def create_housing_agent(temperature=0.1, verbose=True, duckdb_conn=None):
     Returns:
         SQL agent executor
     """
-    # Check for DeepSeek API key
-    api_key = os.getenv('DEEPSEEK_API_KEY')
+    # Check for DeepSeek API key - try Streamlit secrets first, then environment
+    api_key = None
+    try:
+        import streamlit as st
+        if hasattr(st, 'secrets') and 'DEEPSEEK_API_KEY' in st.secrets:
+            api_key = st.secrets['DEEPSEEK_API_KEY']
+    except (ImportError, FileNotFoundError, KeyError):
+        pass
+    
+    # Fall back to environment variable
+    if not api_key:
+        api_key = os.getenv('DEEPSEEK_API_KEY')
+    
     if not api_key:
         raise ValueError(
-            "DEEPSEEK_API_KEY not found. Please set it in your .env file:\n"
+            "DEEPSEEK_API_KEY not found. Please set it in your .env file or Streamlit secrets:\n"
             "DEEPSEEK_API_KEY=your_api_key_here"
         )
 
