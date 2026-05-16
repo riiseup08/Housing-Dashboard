@@ -77,7 +77,7 @@ def create_postgresql_schema(engine):
             ELSE EXTRACT(YEAR FROM d)::INTEGER - 1
         END AS fiscal_year
     FROM generate_series(
-        DATE '2000-01-01',
+        DATE '1948-01-01',
         DATE '2030-12-31',
         INTERVAL '1 day'
     ) AS d;
@@ -169,9 +169,9 @@ def load_data_to_postgresql(engine):
     
     # Load CSVs
     logger.info("Reading CSVs...")
-    df_nhpi = pd.read_csv(required_files['nhpi'], parse_dates=['ref_date'])
+    df_nhpi = pd.read_csv(required_files['nhpi'], parse_dates=['date'])
     df_boc = pd.read_csv(required_files['boc'], parse_dates=['date'])
-    df_starts = pd.read_csv(required_files['starts'], parse_dates=['ref_date'])
+    df_starts = pd.read_csv(required_files['starts'], parse_dates=['date'])
     
     logger.info(f"  NHPI: {len(df_nhpi):,} rows")
     logger.info(f"  BOC Rates: {len(df_boc):,} rows")
@@ -215,7 +215,7 @@ def load_data_to_postgresql(engine):
     
     # Join with dimensions
     df_prices = df_nhpi.copy()
-    df_prices['date_key'] = df_prices['ref_date'].dt.strftime('%Y%m%d').astype(int)
+    df_prices['date_key'] = df_prices['date'].dt.strftime('%Y%m%d').astype(int)
     
     # Merge with geography
     df_prices = df_prices.merge(
@@ -226,7 +226,7 @@ def load_data_to_postgresql(engine):
     )
     
     # Calculate YoY and MoM changes
-    df_prices = df_prices.sort_values(['geo', 'nhpi_type', 'ref_date'])
+    df_prices = df_prices.sort_values(['geo', 'nhpi_type', 'date'])
     df_prices['yoy_change_pct'] = df_prices.groupby(['geo', 'nhpi_type'])['index_value'].pct_change(12) * 100
     df_prices['mom_change_pct'] = df_prices.groupby(['geo', 'nhpi_type'])['index_value'].pct_change() * 100
     
@@ -243,7 +243,7 @@ def load_data_to_postgresql(engine):
     logger.info("Populating fact_housing_starts...")
     
     df_starts_fact = df_starts.copy()
-    df_starts_fact['date_key'] = df_starts_fact['ref_date'].dt.strftime('%Y%m%d').astype(int)
+    df_starts_fact['date_key'] = df_starts_fact['date'].dt.strftime('%Y%m%d').astype(int)
     
     # Merge with geography
     df_starts_fact = df_starts_fact.merge(
@@ -254,7 +254,7 @@ def load_data_to_postgresql(engine):
     )
     
     # Calculate 12-month rolling average
-    df_starts_fact = df_starts_fact.sort_values(['geo', 'housing_type', 'ref_date'])
+    df_starts_fact = df_starts_fact.sort_values(['geo', 'housing_type', 'date'])
     df_starts_fact['rolling_12m_avg'] = df_starts_fact.groupby(['geo', 'housing_type'])['starts_count'].transform(
         lambda x: x.rolling(12, min_periods=1).mean()
     )
