@@ -23,8 +23,8 @@ class TestCleanNHPI:
         expected_cols = ['date', 'geo', 'geo_code', 'nhpi_type', 'index_value']
         assert list(clean_df.columns) == expected_cols
         
-        # Check types
-        assert clean_df['date'].dtype == 'datetime64[ns]'
+        # Check types (pandas 2.0+ uses datetime64[us], older uses datetime64[ns])
+        assert clean_df['date'].dtype.kind == 'M'
         assert clean_df['index_value'].dtype == 'float64'
         assert clean_df['geo'].dtype == 'object'
     
