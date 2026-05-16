@@ -40,6 +40,14 @@ jobs:
       - name: Run unit tests
         run: pytest tests/ -m "not slow" --maxfail=1
 
+      - name: Migrate data to PostgreSQL
+        if: success()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "Migrating data to PostgreSQL..."
+          python migrate_to_postgres.py
+
       - name: Upload DuckDB artifact
         if: always()
         uses: actions/upload-artifact@v4
