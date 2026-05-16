@@ -19,7 +19,7 @@ from langchain_community.callbacks import get_openai_callback
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import create_sql_agent
 from langchain_openai import ChatOpenAI
-from config import DB_PATH
+from config import DB_PATH, DB_TYPE, DB_CONNECTION_STRING
 
 logger = logging.getLogger(__name__)
 
@@ -114,10 +114,9 @@ def create_housing_agent(temperature=0.1, verbose=True, duckdb_conn=None):
     Args:
         temperature: LLM temperature (0.0-1.0). Lower = more focused.
         verbose: Show agent reasoning steps.
-        duckdb_conn: Optional existing duckdb.DuckDBPyConnection. If provided,
-            the agent piggybacks on it via .cursor() so we do not open a second
-            connection to the file (which DuckDB rejects when configurations
-            differ — e.g. dashboard opened it read_only).
+        duckdb_conn: Optional existing duckdb.DuckDBPyConnection (for DuckDB only).
+            If provided, the agent piggybacks on it via .cursor() so we do not 
+            open a second connection to the file.
 
     Returns:
         SQL agent executor
@@ -130,23 +129,34 @@ def create_housing_agent(temperature=0.1, verbose=True, duckdb_conn=None):
             "DEEPSEEK_API_KEY=your_api_key_here"
         )
 
-    if duckdb_conn is None:
-        # Standalone use (CLI / tests): open our own read-only connection.
-        import duckdb
-        duckdb_conn = duckdb.connect(str(DB_PATH), read_only=True)
+    # Create database engine based on DB_TYPE
+    if DB_TYPE == 'duckdb':
+        # DuckDB configuration
+        if duckdb_conn is None:
+            # Standalone use (CLI / tests): open our own read-only connection.
+            import duckdb
+            duckdb_conn = duckdb.connect(str(DB_PATH), read_only=True)
 
-    # Share the caller's open connection. cursor() returns an independent
-    # DuckDBPyConnection bound to the same database — no second file open,
-    # so no "different configuration" conflict. We wrap it in duckdb-engine's
-    # ConnectionWrapper so SQLAlchemy gets the DBAPI shape it expects.
-    engine = create_engine(
-        "duckdb:///:memory:",
-        creator=lambda: ConnectionWrapper(duckdb_conn.cursor()),
-        poolclass=StaticPool,
-    )
-    # Use a no-reflection subclass: duckdb-engine 0.17's Postgres-style
-    # reflection probes pg_catalog.pg_collation, which DuckDB 1.5.x lacks.
-    db = _DuckDBNoReflectDatabase(engine, duckdb_conn)
+        # Share the caller's open connection. cursor() returns an independent
+        # DuckDBPyConnection bound to the same database — no second file open,
+        # so no "different configuration" conflict. We wrap it in duckdb-engine's
+        # ConnectionWrapper so SQLAlchemy gets the DBAPI shape it expects.
+        engine = create_engine(
+            "duckdb:///:memory:",
+            creator=lambda: ConnectionWrapper(duckdb_conn.cursor()),
+            poolclass=StaticPool,
+        )
+        # Use a no-reflection subclass: duckdb-engine 0.17's Postgres-style
+        # reflection probes pg_catalog.pg_collation, which DuckDB 1.5.x lacks.
+        db = _DuckDBNoReflectDatabase(engine, duckdb_conn)
+        db_name = "DuckDB"
+    else:
+        # PostgreSQL configuration
+        engine = create_engine(DB_CONNECTION_STRING)
+        db = SQLDatabase(engine)
+        db_name = "PostgreSQL"
+    
+    logger.info(f"Creating housing agent with {db_name} backend")
     
     # Initialize DeepSeek LLM (OpenAI-compatible API)
     llm = ChatOpenAI(
@@ -158,7 +168,7 @@ def create_housing_agent(temperature=0.1, verbose=True, duckdb_conn=None):
     )
     
     # Create SQL agent with custom instructions
-    prefix = """You are a Canadian housing market analyst with access to a DuckDB database containing:
+    prefix = f"""You are a Canadian housing market analyst with access to a {db_name} database containing:
 
 **Tables:**
 1. **dim_date**: Date dimension with full_date, year, quarter, month, etc.
@@ -230,9 +240,9 @@ def query_agent(agent, question, duckdb_conn=None):
     Args:
         agent: SQL agent executor
         question: User's natural language question
-        duckdb_conn: Optional DuckDB connection. If provided, the last SQL
-            query the agent ran is re-executed against it to return a
-            DataFrame the UI can chart.
+        duckdb_conn: Optional database connection (DuckDB or SQLAlchemy engine).
+            If provided, the last SQL query the agent ran is re-executed against 
+            it to return a DataFrame the UI can chart.
 
     Returns:
         dict with 'answer', 'steps', 'success', 'sql', 'dataframe', 'usage'.
@@ -250,7 +260,15 @@ def query_agent(agent, question, duckdb_conn=None):
             sql = _extract_last_sql(steps)
             if sql:
                 try:
-                    df = duckdb_conn.cursor().execute(sql).fetchdf()
+                    # Check if it's a DuckDB connection or SQLAlchemy engine
+                    if hasattr(duckdb_conn, 'cursor'):
+                        # DuckDB connection
+                        df = duckdb_conn.cursor().execute(sql).fetchdf()
+                    else:
+                        # SQLAlchemy engine (PostgreSQL)
+                        import pandas as pd
+                        from sqlalchemy import text as sql_text
+                        df = pd.read_sql_query(sql_text(sql), duckdb_conn)
                 except Exception:
                     # The agent's SQL didn't replay cleanly (e.g. it created
                     # a temp object during reasoning). Log it so we can see

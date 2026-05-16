@@ -28,6 +28,19 @@ DATA_RAW.mkdir(parents=True, exist_ok=True)
 DATA_PROCESSED.mkdir(parents=True, exist_ok=True)
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
+# ── Database Configuration ─────────────────────────────────────
+# PostgreSQL connection for cloud deployment (e.g., Streamlit Cloud)
+# If DATABASE_URL is set, use PostgreSQL; otherwise use local DuckDB
+DATABASE_URL = os.getenv('DATABASE_URL')
+DB_TYPE = 'postgresql' if DATABASE_URL else 'duckdb'
+
+# For local development with DuckDB
+if DB_TYPE == 'duckdb':
+    DB_CONNECTION_STRING = str(DB_PATH)
+else:
+    # PostgreSQL connection string (format: postgresql://user:pass@host:port/dbname)
+    DB_CONNECTION_STRING = DATABASE_URL
+
 # ── Statistics Canada ──────────────────────────────────────────
 # New Housing Price Index (NHPI) — Table 18-10-0205
 # Monthly index (base 201612=100) for 27 CMAs + national

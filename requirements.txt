@@ -6,6 +6,9 @@ streamlit>=1.30
 plotly>=5.18
 python-dotenv>=1.0
 
+# Database drivers
+psycopg2-binary>=2.9.9  # PostgreSQL adapter for cloud deployment
+
 # AI Agent dependencies
 langchain>=0.1.0
 langchain-community>=0.0.20

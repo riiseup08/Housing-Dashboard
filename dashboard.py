@@ -8,19 +8,19 @@ Usage:
 """
 
 import streamlit as st
-import duckdb
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import os
 from datetime import datetime
 from pathlib import Path
+from sqlalchemy import create_engine, text
 
 # Load environment variables BEFORE importing config
 from dotenv import load_dotenv
 load_dotenv()  # Reload .env file explicitly
 
-from config import DB_PATH
+from config import DB_PATH, DB_TYPE, DB_CONNECTION_STRING
 
 
 # ============================================================
@@ -125,11 +125,55 @@ def _render_agent_chart(df: pd.DataFrame) -> None:
 # ============================================================
 @st.cache_resource
 def get_connection():
-    """Create a cached DuckDB connection."""
-    if not Path(DB_PATH).exists():
-        st.error(f"Database not found at {DB_PATH}. Run `python run_pipeline.py --load-db` first.")
-        st.stop()
-    return duckdb.connect(str(DB_PATH), read_only=True)
+    """Create a cached database connection (DuckDB or PostgreSQL)."""
+    if DB_TYPE == 'duckdb':
+        import duckdb
+        if not Path(DB_PATH).exists():
+            st.error(f"Database not found at {DB_PATH}. Run `python run_pipeline.py --load-db` first.")
+            st.stop()
+        # Return DuckDB connection for backward compatibility
+        return duckdb.connect(str(DB_PATH), read_only=True)
+    else:
+        # PostgreSQL - return SQLAlchemy engine
+        engine = create_engine(DB_CONNECTION_STRING)
+        # Test connection
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            return engine
+        except Exception as e:
+            st.error(f"Database connection failed: {e}")
+            st.stop()
+
+
+def execute_query(query, params=None):
+    """Execute SQL query and return DataFrame (works with both DuckDB and PostgreSQL)."""
+    conn = get_connection()
+    
+    if DB_TYPE == 'duckdb':
+        # DuckDB connection
+        if params:
+            return conn.execute(query, params).fetchdf()
+        else:
+            return conn.execute(query).fetchdf()
+    else:
+        # PostgreSQL SQLAlchemy engine
+        if params:
+            # Convert positional parameters (?) to named parameters for SQLAlchemy
+            # This is a simple conversion - may need adjustment for complex queries
+            query_pg = query
+            if '?' in query:
+                # Replace ? with :param1, :param2, etc.
+                param_dict = {}
+                for i, param in enumerate(params, 1):
+                    param_name = f'param{i}'
+                    query_pg = query_pg.replace('?', f':{param_name}', 1)
+                    param_dict[param_name] = param
+                return pd.read_sql_query(text(query_pg), conn, params=param_dict)
+            else:
+                return pd.read_sql_query(text(query), conn, params=params)
+        else:
+            return pd.read_sql_query(text(query), conn)
 
 
 conn = get_connection()
@@ -141,17 +185,17 @@ conn = get_connection()
 @st.cache_data(ttl=3600)
 def load_geographies():
     """Load all geographies from the database."""
-    return conn.execute("""
+    return execute_query("""
         SELECT DISTINCT geo_name, geo_type 
         FROM dim_geography 
         ORDER BY geo_type, geo_name
-    """).fetchdf()
+    """)
 
 
 @st.cache_data(ttl=3600)
 def load_housing_prices(geography='Canada', start_year=2015):
     """Load housing price data for a specific geography."""
-    return conn.execute("""
+    return execute_query("""
         SELECT
             d.full_date,
             d.year,
@@ -168,13 +212,13 @@ def load_housing_prices(geography='Canada', start_year=2015):
           AND d.year >= ?
           AND d.is_month_start = TRUE
         ORDER BY d.full_date, hp.nhpi_type
-    """, [geography, start_year]).fetchdf()
+    """, [geography, start_year])
 
 
 @st.cache_data(ttl=3600)
 def load_interest_rates(start_year=2015):
     """Load Bank of Canada interest rates."""
-    return conn.execute("""
+    return execute_query("""
         SELECT
             d.full_date,
             d.year,
@@ -186,13 +230,13 @@ def load_interest_rates(start_year=2015):
         JOIN dim_date d ON ir.date_key = d.date_key
         WHERE d.year >= ?
         ORDER BY d.full_date
-    """, [start_year]).fetchdf()
+    """, [start_year])
 
 
 @st.cache_data(ttl=3600)
 def load_housing_starts(geography='Canada', start_year=2015):
     """Load housing starts data."""
-    return conn.execute("""
+    return execute_query("""
         SELECT
             d.full_date,
             d.year,
@@ -215,7 +259,7 @@ def load_housing_starts(geography='Canada', start_year=2015):
           AND d.year >= ?
           AND d.is_month_start = TRUE
         ORDER BY d.full_date, hs.housing_type
-    """, [geography, start_year]).fetchdf()
+    """, [geography, start_year])
 
 
 @st.cache_data(ttl=3600)
@@ -224,7 +268,7 @@ def load_comparative_prices(geographies, nhpi_type='Total (house and land)', sta
     # Use a positional placeholder per geography so DuckDB does the quoting.
     placeholders = ", ".join("?" for _ in geographies)
     params = list(geographies) + [nhpi_type, start_year]
-    return conn.execute(f"""
+    return execute_query(f"""
         SELECT
             d.full_date,
             d.year,
@@ -280,7 +324,7 @@ GEO_COORDINATES = {
 @st.cache_data(ttl=3600)
 def load_latest_geographic_data():
     """Load latest housing data for all geographies with coordinates."""
-    df = conn.execute("""
+    df = execute_query("""
         WITH latest_data AS (
             SELECT 
                 g.geo_name,
@@ -298,7 +342,7 @@ def load_latest_geographic_data():
         SELECT geo_name, geo_type, index_value, yoy_change_pct, full_date
         FROM latest_data
         WHERE rn = 1
-    """).fetchdf()
+    """)
     
     # Add coordinates
     df['lat'] = df['geo_name'].map(lambda x: GEO_COORDINATES.get(x, {}).get('lat'))
@@ -310,7 +354,7 @@ def load_latest_geographic_data():
 @st.cache_data(ttl=3600)
 def load_latest_metrics():
     """Load latest metrics for the dashboard overview."""
-    return conn.execute("""
+    return execute_query("""
         WITH latest_date AS (
             SELECT MAX(d.full_date) as max_date
             FROM fact_housing_prices hp
@@ -396,7 +440,7 @@ st.sidebar.markdown("### 📅 Data Freshness")
 @st.cache_data(ttl=3600)
 def _freshness():
     """Latest covered month per fact table + DB file mtime."""
-    rows = conn.execute("""
+    rows = execute_query("""
         SELECT 'NHPI' AS source, MAX(d.full_date) AS latest
           FROM fact_housing_prices f JOIN dim_date d ON f.date_key = d.date_key
         UNION ALL
@@ -405,8 +449,11 @@ def _freshness():
         UNION ALL
         SELECT 'Housing starts', MAX(d.full_date)
           FROM fact_housing_starts f JOIN dim_date d ON f.date_key = d.date_key
-    """).fetchdf()
-    db_mtime = datetime.fromtimestamp(Path(DB_PATH).stat().st_mtime)
+    """)
+    if DB_TYPE == 'duckdb':
+        db_mtime = datetime.fromtimestamp(Path(DB_PATH).stat().st_mtime)
+    else:
+        db_mtime = datetime.now()  # For PostgreSQL, use current time
     return rows, db_mtime
 
 
@@ -475,14 +522,15 @@ if page == "📊 Overview":
     
     with col4:
         # Get housing starts for Canada in last 12 months
-        recent_starts = conn.execute("""
+        recent_starts_df = execute_query("""
             SELECT SUM(hs.starts_count) as total
             FROM fact_housing_starts hs
             JOIN dim_date d ON hs.date_key = d.date_key
             JOIN dim_geography g ON hs.geo_key = g.geo_key
             WHERE g.geo_name = 'Canada'
               AND d.full_date >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '12 months'
-        """).fetchone()[0]
+        """)
+        recent_starts = recent_starts_df.iloc[0]['total'] if len(recent_starts_df) > 0 else None
         st.metric(
             label="🏗️ Housing Starts (12mo)",
             value=f"{int(recent_starts):,}" if recent_starts else "N/A",
