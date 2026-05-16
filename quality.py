@@ -17,8 +17,15 @@ from config import DB_PATH
 
 logger = logging.getLogger(__name__)
 
-# Same threshold the dashboard's sidebar uses for its 🟢 stoplight.
-DEFAULT_MAX_AGE_DAYS = 45
+# Dataset-specific freshness thresholds
+# NHPI and Housing Starts are published less frequently than interest rates
+FRESHNESS_THRESHOLDS = {
+    "Interest rates": 45,   # Bank of Canada updates frequently
+    "NHPI": 90,             # Statistics Canada publishes monthly with ~2-3 month lag
+    "Housing starts": 150,  # CMHC data can have significant reporting lag
+}
+
+DEFAULT_MAX_AGE_DAYS = 45  # Fallback for unlisted sources
 
 
 def check_freshness(
@@ -30,10 +37,13 @@ def check_freshness(
     Mirrors the SQL used by `dashboard._freshness()` so the workflow's
     failure condition lines up with the dashboard's red/yellow indicator.
 
+    Note: Uses dataset-specific thresholds from FRESHNESS_THRESHOLDS dict,
+    falling back to max_age_days parameter for unlisted sources.
+
     Args:
         conn: Optional open DuckDB connection. If None, opens a read-only one
             against DB_PATH.
-        max_age_days: Threshold in days.
+        max_age_days: Default threshold in days for sources not in FRESHNESS_THRESHOLDS.
 
     Returns:
         List of error strings; empty if all sources are fresh.
@@ -69,11 +79,14 @@ def check_freshness(
             errors.append(f"{source}: no rows in fact table")
             continue
         age = (today - latest).days
-        if age > max_age_days:
+        # Use dataset-specific threshold if available, otherwise use default
+        threshold = FRESHNESS_THRESHOLDS.get(source, max_age_days)
+        if age > threshold:
             errors.append(
                 f"{source} latest data is {latest.isoformat()} "
-                f"({age} days old, max {max_age_days})"
+                f"({age} days old, max {threshold})"
             )
         else:
-            logger.info("  ✓ %s fresh: %s (%d days old)", source, latest, age)
+            logger.info("  ✓ %s fresh: %s (%d days old, threshold %d)", 
+                       source, latest, age, threshold)
     return errors
