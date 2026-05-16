@@ -20,6 +20,7 @@ jobs:
     timeout-minutes: 30
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      PYTHONPATH: ${{ github.workspace }}
 
     steps:
       - name: Checkout
@@ -37,13 +38,9 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run pipeline (extract + load + strict checks)
-        env:
-          PYTHONPATH: .
         run: python run_pipeline.py --load-db --strict
 
       - name: Run unit tests
-        env:
-          PYTHONPATH: .
         run: pytest tests/ -m "not slow" --maxfail=1
 
       - name: Migrate data to PostgreSQL
