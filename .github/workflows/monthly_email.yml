@@ -1,0 +1,45 @@
+name: Monthly housing insight email
+
+on:
+  schedule:
+    - cron: "0 9 1 * *"   # 09:00 UTC, 1st of every month
+  workflow_dispatch: {}
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read latest digest JSON
+        id: read
+        run: |
+          set -euo pipefail
+          FILE=data/insights/latest.json
+          if [ ! -f "$FILE" ]; then
+            echo "::error::$FILE not found. Run refresh.yml first to generate it."
+            exit 1
+          fi
+          SUBJECT=$(jq -r '.subject' "$FILE")
+          {
+            echo "subject=$SUBJECT"
+            echo "html<<__HTML_EOF__"
+            jq -r '.html' "$FILE"
+            echo "__HTML_EOF__"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Send email via Gmail SMTP
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_USER }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          from: "Canadian Housing Monthly <${{ secrets.GMAIL_USER }}>"
+          to: ahandafranck@gmail.com
+          subject: ${{ steps.read.outputs.subject }}
+          html_body: ${{ steps.read.outputs.html }}
+          convert_markdown: false

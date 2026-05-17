@@ -43,6 +43,12 @@ jobs:
       - name: Run unit tests
         run: pytest tests/ -m "not slow" --maxfail=1
 
+      - name: Generate monthly insight digest
+        if: success()
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: python -m insights.generate_digest
+
       - name: Migrate data to PostgreSQL
         if: success()
         env:
@@ -65,6 +71,8 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(data): weekly refresh ${{ github.run_id }}"
-          file_pattern: "data/processed/*.csv"
+          file_pattern: |
+            data/processed/*.csv
+            data/insights/*.json
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com

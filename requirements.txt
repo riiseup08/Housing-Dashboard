@@ -6,6 +6,10 @@ streamlit>=1.30
 plotly>=5.18
 python-dotenv>=1.0
 
+# Monthly insight digest
+openai>=1.40   # used as a DeepSeek client via base_url override
+jinja2>=3.1
+
 # Database drivers
 psycopg2-binary>=2.9.9  # PostgreSQL adapter for cloud deployment
 

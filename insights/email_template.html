@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ subject }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f6f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f6f7fb;padding:24px 0;">
+    <tr><td align="center">
+      <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+
+        <tr><td style="padding:32px 32px 8px 32px;">
+          <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#7a7f8c;">Canadian Housing Monthly</div>
+          <h1 style="margin:8px 0 0 0;font-size:28px;line-height:1.2;color:#0d1b2a;">{{ month_long }}</h1>
+          <div style="margin-top:4px;font-size:13px;color:#7a7f8c;">Generated {{ generated_at_short }} · Source: StatsCan, Bank of Canada, CMHC</div>
+        </td></tr>
+
+        <tr><td style="padding:24px 32px 8px 32px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tr>
+              <td width="33%" valign="top" style="padding:12px;background:#f0f3f9;border-radius:8px;">
+                <div style="font-size:11px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;">NHPI · Canada</div>
+                <div style="font-size:22px;font-weight:600;color:#0d1b2a;margin-top:6px;">{{ kpis.nhpi_index }}</div>
+                <div style="font-size:13px;color:{{ kpis.nhpi_yoy_color }};margin-top:2px;">{{ kpis.nhpi_yoy_str }} YoY</div>
+              </td>
+              <td width="6"></td>
+              <td width="33%" valign="top" style="padding:12px;background:#f0f3f9;border-radius:8px;">
+                <div style="font-size:11px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;">BoC Overnight</div>
+                <div style="font-size:22px;font-weight:600;color:#0d1b2a;margin-top:6px;">{{ kpis.boc_rate_str }}</div>
+                <div style="font-size:13px;color:#5a6172;margin-top:2px;">{{ kpis.boc_30d_str }} (30d)</div>
+              </td>
+              <td width="6"></td>
+              <td width="33%" valign="top" style="padding:12px;background:#f0f3f9;border-radius:8px;">
+                <div style="font-size:11px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;">Starts · 12 mo total</div>
+                <div style="font-size:22px;font-weight:600;color:#0d1b2a;margin-top:6px;">{{ kpis.starts_12m_str }}</div>
+                <div style="font-size:13px;color:#5a6172;margin-top:2px;">{{ kpis.starts_yoy_str }} vs prior 12mo</div>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+
+        {% for section in narrative_sections %}
+        <tr><td style="padding:8px 32px;">
+          <h2 style="margin:24px 0 8px 0;font-size:17px;color:#0d1b2a;">{{ section.title }}</h2>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:#2c3340;">{{ section.body }}</p>
+        </td></tr>
+        {% endfor %}
+
+        <tr><td style="padding:8px 32px;">
+          <h2 style="margin:24px 0 8px 0;font-size:17px;color:#0d1b2a;">Top &amp; bottom CMAs (YoY)</h2>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tr>
+              <td width="49%" valign="top">
+                <div style="font-size:12px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Top movers</div>
+                {% for c in cma_top %}
+                <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;">
+                  <span style="color:#2c3340;">{{ c.geo }}</span>
+                  <span style="color:#1b7a3f;font-weight:600;">{{ "%+.1f"|format(c.yoy_pct) }}%</span>
+                </div>
+                {% endfor %}
+              </td>
+              <td width="2%"></td>
+              <td width="49%" valign="top">
+                <div style="font-size:12px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Bottom movers</div>
+                {% for c in cma_bottom %}
+                <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;">
+                  <span style="color:#2c3340;">{{ c.geo }}</span>
+                  <span style="color:#a8232a;font-weight:600;">{{ "%+.1f"|format(c.yoy_pct) }}%</span>
+                </div>
+                {% endfor %}
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:24px 32px 32px 32px;border-top:1px solid #eef0f5;margin-top:16px;">
+          <div style="font-size:12px;color:#7a7f8c;line-height:1.5;">
+            This digest is generated automatically from the Canadian Housing Affordability data pipeline.
+            NHPI data carries a 2–3 month publication lag from Statistics Canada.
+            Reply to this email is not monitored.
+          </div>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
