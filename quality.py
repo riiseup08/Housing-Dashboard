@@ -22,7 +22,12 @@ logger = logging.getLogger(__name__)
 FRESHNESS_THRESHOLDS = {
     "Interest rates": 45,   # Bank of Canada updates frequently
     "NHPI": 90,             # Statistics Canada publishes monthly with ~2-3 month lag
-    "Housing starts": 150,  # CMHC data can have significant reporting lag
+    # Quarterly series: REF_DATE is the quarter's FIRST month, so the newest
+    # published point (e.g. Q1 dated Jan 1) is already ~180-240 days "old" during
+    # the window before the next quarter releases (~2 months after quarter end).
+    # 250 covers that full cycle without false-failing; a genuine StatCan outage
+    # still trips it after roughly one missed quarter.
+    "Housing starts": 250,  # CMHC quarterly data, dated at quarter start
 }
 
 DEFAULT_MAX_AGE_DAYS = 45  # Fallback for unlisted sources
