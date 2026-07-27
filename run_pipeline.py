@@ -151,7 +151,7 @@ def run_pipeline(sources: list[str] | None = None) -> dict:
     logger.info("=" * 60)
     for name, result in results.items():
         if result["status"] == "success":
-            validate_output(name, result["df"])
+            result["validation_passed"] = validate_output(name, result["df"])
         else:
             status = result["status"].replace("_", " ").title()
             logger.error(f"  ✗ {name}: {status} — {result.get('error', 'Unknown error')}")
@@ -234,6 +234,8 @@ if __name__ == "__main__":
                     f"{name}: extractor status={result['status']} "
                     f"({result.get('error', 'unknown error')})"
                 )
+            elif not result.get("validation_passed", False):
+                errors.append(f"{name}: output failed data validation")
 
         if args.load_db:
             if not db_loaded:

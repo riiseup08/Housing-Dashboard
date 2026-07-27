@@ -90,6 +90,11 @@ def load_to_duckdb(sql_dir: Path = None) -> dict:
     conn = get_connection()
     
     try:
+        # Rebuild the warehouse as one transaction. If any DDL or transform
+        # fails, readers keep the last complete version instead of seeing a
+        # partially rebuilt schema.
+        conn.execute("BEGIN TRANSACTION")
+
         # Execute SQL scripts in order
         sql_files = [
             sql_dir / "01_schema.sql",
@@ -100,6 +105,8 @@ def load_to_duckdb(sql_dir: Path = None) -> dict:
             if not sql_file.exists():
                 raise FileNotFoundError(f"SQL file not found: {sql_file}")
             execute_sql_file(conn, sql_file)
+
+        conn.execute("COMMIT")
         
         # Get row counts
         logger.info("\nVerifying data load...")
@@ -124,6 +131,14 @@ def load_to_duckdb(sql_dir: Path = None) -> dict:
         logger.info(f"\nDatabase saved to: {DB_PATH}")
         
         return results
+
+    except Exception:
+        try:
+            conn.execute("ROLLBACK")
+        except Exception:
+            # The transaction may already have been closed by the database.
+            pass
+        raise
     
     finally:
         conn.close()

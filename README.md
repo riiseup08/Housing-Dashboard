@@ -1,286 +1,177 @@
-# 🏠 Canadian Housing Affordability Data Pipeline
+# Canadian Housing Market Data Pipeline
 
-A comprehensive ETL pipeline and analytics platform for Canadian housing market data, featuring automated data extraction, DuckDB warehousing, and an interactive Streamlit dashboard.
+An automated ETL and analytics project for exploring Canadian housing-market
+conditions. It combines housing prices, interest rates, and construction
+activity in a DuckDB warehouse and presents them in an interactive Streamlit
+dashboard.
 
-## 🎯 Features
+> **Scope note:** The current sources describe important *drivers* of housing
+> affordability, but they do not measure affordability directly. The New
+> Housing Price Index is an index—not a dollar home price—and the warehouse
+> does not yet contain household income. A defensible price-to-income or
+> mortgage-payment-to-income metric therefore requires additional sources.
 
-- **Automated Data Extraction** from 3 authoritative sources:
-  - Statistics Canada NHPI (New Housing Price Index)
-  - Bank of Canada Valet API (Interest Rates)
-  - CMHC Housing Starts (via Statistics Canada)
-  
-- **Production-Ready Pipeline**:
-  - Retry logic with exponential backoff
-  - Business rule validation
-  - Comprehensive error handling
-  - Environment-based configuration
-  
-- **DuckDB Star Schema Warehouse**:
-  - Optimized analytical queries
-  - Date and geography dimensions
-  - Pre-calculated metrics (YoY/MoM changes, rolling averages)
-  
-- **Interactive Streamlit Dashboard**:
-  - Real-time data visualization
-  - Comparative analysis across geographies
-  - Interest rate correlation analysis
+## What it includes
 
-## 📊 Dashboard
+- Automated extraction from three authoritative public sources
+- Retry logic, timeouts, validation, and strict CI failure gates
+- DuckDB star schema with date and geography dimensions
+- Year-over-year, month-over-month, and rolling metrics
+- Interactive Streamlit dashboard and query CLI
+- Weekly scheduled refresh and source-specific freshness checks
+- Monthly AI-assisted market digest
+- Optional PostgreSQL deployment path
 
-Launch the interactive dashboard:
+## Data sources
+
+| Publisher | Dataset | Frequency | Role |
+|---|---|---:|---|
+| Statistics Canada | New Housing Price Index, table 18-10-0205 | Monthly | Price movement |
+| Bank of Canada | Valet API policy-rate series | Daily | Financing conditions |
+| Statistics Canada / CMHC | Housing starts, table 34-10-0135 | Quarterly | New supply |
+
+The next affordability-focused expansion should add a dollar-denominated home
+price or benchmark-price series and a geography-compatible household-income
+series. Until then, dashboard labels deliberately refer to market conditions
+rather than claiming to calculate household affordability.
+
+## Architecture
+
+```text
+Statistics Canada ─┐
+Bank of Canada ────┼──> Python extraction and validation
+CMHC / StatCan ────┘              │
+                                  v
+                         Processed CSV files
+                                  │
+                                  v
+                         DuckDB star schema
+                           │             │
+                           v             v
+                    Streamlit app    Insight digest
+```
+
+Warehouse tables:
+
+- `dim_date`
+- `dim_geography`
+- `fact_housing_prices`
+- `fact_housing_starts`
+- `fact_interest_rates`
+
+Warehouse rebuilds run inside a transaction so a failed transform does not
+leave a partially rebuilt schema.
+
+## Quick start
+
+Python 3.11 or 3.12 is recommended.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
+Extract all sources and rebuild DuckDB:
+
+```powershell
+python run_pipeline.py --load-db
+```
+
+Run one or more sources:
+
+```powershell
+python run_pipeline.py --source boc
+python run_pipeline.py --source statcan cmhc
+```
+
+Use strict mode to fail on extraction errors, validation failures, database
+load failures, or stale warehouse data:
+
+```powershell
+python run_pipeline.py --load-db --strict
+```
+
+Launch the dashboard:
 
 ```powershell
 streamlit run dashboard.py
 ```
 
-**Features:**
-- 📊 Overview - Key metrics and recent trends
-- 📈 Housing Prices - NHPI analysis by geography
-- 💰 Interest Rates - Bank of Canada rates over time
-- 🏗️ Housing Starts - Construction activity trends
-- 🔍 Comparative Analysis - Multi-geography comparison with rate correlations
-
-## Architecture
-
-```
-Stats Canada (NHPI)  ─┐
-CMHC (Housing Starts) ─┼──▶  Python ETL  ──▶  DuckDB (Star Schema)  ──▶  Streamlit Dashboard
-Bank of Canada (Rates) ─┘       extract/         transform/                   serve/
-                              clean/load        analytical SQL
-```
-
-## Data Sources
-
-| Source | Dataset | Frequency | Format |
-|--------|---------|-----------|--------|
-| Statistics Canada | New Housing Price Index (Table 18-10-0205) | Monthly | CSV (zip) |
-| Bank of Canada | Policy Interest Rate (Valet API) | Daily | JSON/CSV |
-| CMHC | Housing Starts by Province | Monthly | CSV |
-
-## Project Structure
-
-```
-Canadian Housing Affordability Data Pipeline/
-├── config.py                  # Configuration and paths
-├── run_pipeline.py            # Main pipeline orchestrator
-├── load_duckdb.py            # DuckDB loading module
-├── query_db.py               # CLI query tool
-├── dashboard.py              # Streamlit dashboard
-├── requirements.txt          # Python dependencies
-├── .env.example              # Environment variable template
-├── .gitignore                # Git exclusions
-│
-├── extractors/               # Data extraction modules
-│   ├── __init__.py
-│   ├── extract_statcan.py   # Stats Canada NHPI
-│   ├── extract_boc.py       # Bank of Canada rates
-│   ├── extract_cmhc.py      # CMHC housing starts
-│   ├── utils.py             # Shared HTTP utilities with retry logic
-│   └── validators.py        # Business rule validators
-│
-├── sql/                      # SQL scripts for DuckDB
-│   ├── 01_schema.sql        # Star schema DDL
-│   ├── 02_load_and_transform.sql  # Data loading and transformations
-│   └── 03_analytical_queries.sql  # Pre-built analytical queries
-│
-├── tests/                    # Test suite (pytest)
-│   ├── conftest.py          # Test fixtures
-│   └── test_extract_statcan.py
-│
-├── data/                     # Data storage
-│   ├── raw/                 # Downloaded raw files
-│   ├── processed/           # Cleaned CSV files
-│   ├── housing.duckdb       # DuckDB database
-│   └── pipeline.log         # Pipeline logs
-│
-└── docs/                     # Documentation
-    ├── AUDIT_REPORT.md      # Code quality audit
-    ├── QUICK_FIXES.md       # Implementation guide
-    ├── FIXES_COMPLETED.md   # Change summary
-    └── DUCKDB_GUIDE.md      # Database usage guide
-```
-
-## 🗄️ Database Schema
-
-**Star Schema** with 5 tables:
-
-### Dimensions
-- **dim_date** (11,323 rows) - Date dimension covering 2000-2030
-- **dim_geography** (42 rows) - Provinces and CMAs
-
-### Facts
-- **fact_housing_prices** (34,146 rows) - NHPI data with YoY/MoM metrics
-- **fact_housing_starts** (19,674 rows) - Construction activity
-- **fact_interest_rates** (4,445 rows) - Bank of Canada rates
-
-See [DUCKDB_GUIDE.md](DUCKDB_GUIDE.md) for detailed schema documentation and query examples.
-
-## 🚀 Quick Start
-
-### 1. Install Dependencies
+Run the tests:
 
 ```powershell
-pip install -r requirements.txt
+python -m pytest
+python -m pytest -m "not slow"
 ```
 
-### 2. Run the Pipeline
+## Project structure
 
-**Extract data only:**
-```powershell
-python run_pipeline.py
+```text
+.
+├── config.py                 Central configuration and paths
+├── run_pipeline.py           Extraction orchestration and validation
+├── load_duckdb.py            Transactional warehouse rebuild
+├── quality.py                Post-load freshness checks
+├── dashboard.py              Streamlit application
+├── query_db.py               Query CLI
+├── extractors/               Source-specific extraction and cleaning
+├── insights/                 Digest queries and generation
+├── sql/                      Schema, transforms, and analytical SQL
+├── tests/                    Unit and integration tests
+├── data/processed/           Versioned clean extracts
+└── .github/workflows/        CI, refresh, and digest automation
 ```
 
-**Extract and load to DuckDB:**
-```powershell
-python run_pipeline.py --load-db
-```
+## Configuration
 
-**Extract specific sources:**
-```powershell
-## 🔧 Configuration
+Copy `.env.example` to `.env`. Common settings include:
 
-Create a `.env` file from the template:
+| Variable | Purpose |
+|---|---|
+| `PIPELINE_ENV` | Environment name |
+| `DATA_RAW` / `DATA_PROCESSED` | Data directories |
+| `DB_PATH` | Local DuckDB path |
+| `DATABASE_URL` | Optional PostgreSQL connection |
+| `DOWNLOAD_TIMEOUT` / `API_TIMEOUT` | Network timeouts |
+| `LOG_LEVEL` | Logging verbosity |
+| `DEEPSEEK_API_KEY` | Optional digest generation |
 
-```powershell
-cp .env.example .env
-```
+The monthly email workflow also expects GitHub Actions secrets named
+`GMAIL_USER`, `GMAIL_APP_PASSWORD`, and `DIGEST_RECIPIENT`.
 
-**Key variables:**
-- `PIPELINE_ENV` - Environment (development/production)
-- `DOWNLOAD_TIMEOUT` - HTTP timeout for downloads
-- `DATA_RAW` - Raw data directory
-- `DATA_PROCESSED` - Processed data directory
-- `DB_PATH` - DuckDB database path
-- `LOG_LEVEL` - Logging level (INFO/DEBUG/WARNING)
+## Data-quality behavior
 
-## 📈 Data Pipeline Flow
+Extraction outputs are checked for minimum row counts, excessive nulls, and
+duplicate rows. Strict mode treats failed output validation as a pipeline
+failure. After loading, each dataset is checked against a source-specific
+freshness threshold because daily, monthly, and quarterly publications should
+not share one blanket threshold.
 
-```
-┌─────────────────┐
-│  Data Sources   │
-├─────────────────┤
-│ Stats Canada    │──┐
-│ Bank of Canada  │──┼──> [Extract] ──> [Clean] ──> [Validate] ──> [CSV]
-│ CMHC            │──┘                                                │
-└─────────────────┘                                                   │
-                                                                      ▼
-                                                            ┌──────────────────┐
-                                                            │   DuckDB Load    │
-                                                            ├──────────────────┤
-                                                            │ 1. Create Schema │
-                                                            │ 2. Load Data     │
-                                                            │ 3. Transform     │
-                                                            └────────┬─────────┘
-                                                                     │
-                                    ┌────────────────────────────────┼─────────────────────┐
-                                    ▼                                ▼                     ▼
-                              ┌──────────┐                    ┌──────────┐         ┌──────────┐
-                              │ Query CLI│                    │ Dashboard│         │  Python  │
-                              └──────────┘                    └──────────┘         │   API    │
-                                                                                    └──────────┘
-```
+## Testing and automation
 
-## 🧪 Testing
+- `ci.yml` runs the fast test suite on every push and pull request.
+- `refresh.yml` refreshes data weekly, rebuilds the warehouse, performs strict
+  checks, runs tests, generates the digest, and optionally migrates PostgreSQL.
+- `monthly_email.yml` sends the latest generated digest using repository
+  secrets.
 
-Run the test suite:
+## Known limitations
 
-```powershell
-# Run all tests
-pytest -v
+- NHPI measures relative price movement and cannot be interpreted as a home
+  price in dollars.
+- Housing-start observations are quarterly and dated at the beginning of the
+  quarter.
+- Geographic coverage differs across sources.
+- The current dashboard is a housing-market conditions dashboard; direct
+  affordability ratios remain planned work.
 
-# Run with coverage
-pytest --cov=extractors --cov-report=html
+## Roadmap
 
-# Run specific test file
-pytest tests/test_extract_statcan.py -v
-```
-
-## 📊 Sample Queries
-
-**Recent housing price trends:**
-```sql
-SELECT 
-    d.year || '-' || LPAD(d.month::VARCHAR, 2, '0') as year_month,
-    g.geo_name,
-    hp.index_value,
-    hp.yoy_change_pct
-FROM fact_housing_prices hp
-JOIN dim_date d ON hp.date_key = d.date_key
-JOIN dim_geography g ON hp.geo_key = g.geo_key
-WHERE g.geo_name IN ('Canada', 'Toronto, Ontario', 'Vancouver, British Columbia')
-  AND d.year >= 2023
-  AND hp.nhpi_type = 'Total (house and land)'
-ORDER BY d.full_date;
-```
-
-**Interest rate impact analysis:**
-```sql
-SELECT 
-    d.year,
-    AVG(ir.bank_rate) as avg_rate,
-    AVG(hp.yoy_change_pct) as avg_price_growth
-FROM dim_date d
-LEFT JOIN fact_interest_rates ir ON d.date_key = ir.date_key
-LEFT JOIN fact_housing_prices hp ON d.date_key = hp.date_key
-WHERE d.is_month_start = TRUE
-GROUP BY d.year
-ORDER BY d.year;
-```
-
-## 🛡️ Error Handling
-
-The pipeline implements robust error handling:
-
-- **Retry Logic**: 3 attempts with exponential backoff for network requests
-- **Data Validation**: Business rules check for anomalies (e.g., negative rates, out-of-range values)
-- **Specific Exceptions**: NetworkError, ParseError, ValidationError with recoverable flags
-- **Logging**: Comprehensive logs in `data/pipeline.log`
-
-## 📝 Data Sources
-
-- **Statistics Canada Table 18-10-0205**: New Housing Price Index (NHPI)
-  - Coverage: 1981-present, monthly
-  - Geographies: 10 provinces + 27 CMAs
-  - Base year: 2016 = 100
-
-- **Bank of Canada Valet API**: Policy Interest Rates
-  - Series: V39079 (Bank Rate), V39078 (Overnight Target)
-  - Coverage: 2009-present, daily
-  
-- **Statistics Canada Table 34-10-0135**: Housing Starts
-  - Coverage: 1948-present, monthly
-  - Types: Single, Multiple
-
-## 🤝 Contributing
-
-1. Run tests: `pytest -v`
-2. Follow existing code style
-3. Update documentation
-4. Ensure audit score remains ≥85/100
-
-## 📄 License
-
-MIT License - See LICENSE file for details
-
-## 🙏 Acknowledgments
-
-- Statistics Canada for NHPI and housing starts data
-- Bank of Canada for interest rate data
-- DuckDB team for the excellent analytical database
-- Streamlit for the dashboard framework
-python run_pipeline.py
-
-# 3. Check the output
-ls data/processed/
-```
-
-## Tech Stack
-
-- **Python 3.10+** — extraction & orchestration
-- **pandas** — data cleaning & transformation
-- **DuckDB** — analytical SQL warehouse (Phase 2)
-- **Streamlit** — interactive dashboard (Phase 3)
-
-## License
-
-Open data used under the [Open Government Licence – Canada](https://open.canada.ca/en/open-government-licence-canada).
+1. Add compatible dollar home-price and household-income sources.
+2. Define mortgage-payment-to-income and price-to-income metrics with explicit
+   assumptions.
+3. Add extractor contract tests and warehouse transformation tests.
+4. Publish a methodology page covering revisions, geography matching, and
+   source limitations.

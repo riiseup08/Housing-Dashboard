@@ -1,5 +1,5 @@
 """
-Canadian Housing Affordability Dashboard
+Canadian Housing Market Conditions Dashboard
 ==========================================
 Interactive Streamlit dashboard for exploring housing prices, interest rates, and construction activity.
 
@@ -27,7 +27,7 @@ from config import DB_PATH, DB_TYPE, DB_CONNECTION_STRING
 # PAGE CONFIG
 # ============================================================
 st.set_page_config(
-    page_title="Canadian Housing Affordability Dashboard",
+    page_title="Canadian Housing Market Conditions Dashboard",
     page_icon="🏠",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -390,8 +390,12 @@ def load_latest_metrics():
 # ============================================================
 # DASHBOARD HEADER
 # ============================================================
-st.title("🏠 Canadian Housing Affordability Dashboard")
-st.markdown("**Real-time analysis of housing prices, interest rates, and construction activity**")
+st.title("🏠 Canadian Housing Market Conditions Dashboard")
+st.markdown(
+    "**Price movement, financing conditions, and construction activity**  \n"
+    "NHPI is a relative index, so this dashboard does not calculate "
+    "price-to-income or mortgage-payment affordability."
+)
 st.markdown("---")
 
 
@@ -1244,7 +1248,7 @@ elif page == "🗺️ Geographic Map":
     st.header("Geographic Heat Map Analysis")
     
     st.markdown("""
-    Visualize housing affordability across Canadian provinces and major cities.
+    Compare housing-market price movement across Canadian provinces and major cities.
     Bubble size represents housing price index level, color represents year-over-year growth rate.
     """)
     
