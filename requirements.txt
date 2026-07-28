@@ -1,7 +1,7 @@
 pandas>=2.0
 requests>=2.31
 urllib3>=2.0
-duckdb>=0.10
+duckdb==1.5.2
 streamlit>=1.30
 plotly>=5.18
 python-dotenv>=1.0

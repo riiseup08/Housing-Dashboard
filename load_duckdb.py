@@ -31,7 +31,11 @@ def get_connection(db_path: Path = None) -> duckdb.DuckDBPyConnection:
 
 def execute_sql_file(conn: duckdb.DuckDBPyConnection, sql_file: Path) -> None:
     """
-    Execute a SQL file in DuckDB.
+    Execute a SQL file in DuckDB one parsed statement at a time.
+
+    DuckDB 1.5.2 can raise an internal error when a large, multi-statement
+    script is passed to ``execute`` in one call.  Use DuckDB's parser instead
+    of splitting on semicolons so comments and quoted strings remain safe.
     
     Args:
         conn: DuckDB connection
@@ -42,12 +46,19 @@ def execute_sql_file(conn: duckdb.DuckDBPyConnection, sql_file: Path) -> None:
     with open(sql_file, 'r', encoding='utf-8') as f:
         sql_script = f.read()
     
-    # DuckDB can execute entire SQL scripts at once
-    try:
-        conn.execute(sql_script)
-    except Exception as e:
-        logger.error(f"Error executing {sql_file.name}: {e}")
-        raise
+    statements = conn.extract_statements(sql_script)
+    for statement_number, statement in enumerate(statements, start=1):
+        try:
+            conn.execute(statement)
+        except Exception as e:
+            logger.error(
+                "Error executing %s statement %d of %d: %s",
+                sql_file.name,
+                statement_number,
+                len(statements),
+                e,
+            )
+            raise
 
 
 def load_to_duckdb(sql_dir: Path = None) -> dict:
@@ -90,11 +101,6 @@ def load_to_duckdb(sql_dir: Path = None) -> dict:
     conn = get_connection()
     
     try:
-        # Rebuild the warehouse as one transaction. If any DDL or transform
-        # fails, readers keep the last complete version instead of seeing a
-        # partially rebuilt schema.
-        conn.execute("BEGIN TRANSACTION")
-
         # Execute SQL scripts in order
         sql_files = [
             sql_dir / "01_schema.sql",
@@ -105,8 +111,6 @@ def load_to_duckdb(sql_dir: Path = None) -> dict:
             if not sql_file.exists():
                 raise FileNotFoundError(f"SQL file not found: {sql_file}")
             execute_sql_file(conn, sql_file)
-
-        conn.execute("COMMIT")
         
         # Get row counts
         logger.info("\nVerifying data load...")
@@ -131,14 +135,6 @@ def load_to_duckdb(sql_dir: Path = None) -> dict:
         logger.info(f"\nDatabase saved to: {DB_PATH}")
         
         return results
-
-    except Exception:
-        try:
-            conn.execute("ROLLBACK")
-        except Exception:
-            # The transaction may already have been closed by the database.
-            pass
-        raise
     
     finally:
         conn.close()
