@@ -39,7 +39,7 @@ jobs:
           username: ${{ secrets.GMAIL_USER }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
           from: "Canadian Housing Monthly <${{ secrets.GMAIL_USER }}>"
-          to: ${{ secrets.DIGEST_RECIPIENT }}
+          to: monthe1994@gmail.com
           subject: ${{ steps.read.outputs.subject }}
           html_body: ${{ steps.read.outputs.html }}
           convert_markdown: false
