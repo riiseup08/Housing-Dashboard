@@ -47,7 +47,21 @@ jobs:
         if: success()
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-        run: python -m insights.generate_digest
+        run: |
+          python -m insights.generate_digest --strict
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          digest = json.loads(Path("data/insights/latest.json").read_text(encoding="utf-8"))
+          expected_month = datetime.now(timezone.utc).strftime("%Y-%m")
+          if digest.get("month") != expected_month:
+              raise SystemExit(
+                  f"Digest month is {digest.get('month')!r}; expected {expected_month!r}"
+              )
+          print(f"Verified digest month: {expected_month}")
+          PY
 
       - name: Migrate data to PostgreSQL
         if: success()
@@ -66,13 +80,11 @@ jobs:
           retention-days: 90
           if-no-files-found: ignore
 
-      - name: Commit refreshed CSVs
+      - name: Commit refreshed data and digest
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(data): weekly refresh ${{ github.run_id }}"
-          file_pattern: |
-            data/processed/*.csv
-            data/insights/*.json
+          file_pattern: "data/processed/*.csv data/insights/*.json"
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com

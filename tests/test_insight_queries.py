@@ -7,6 +7,7 @@ import duckdb
 import pytest
 
 from insights import queries
+from insights import generate_digest
 
 
 @pytest.fixture
@@ -102,3 +103,38 @@ def test_starts_trend(conn):
 def test_collect_all(conn):
     out = queries.collect_all(conn)
     assert set(out.keys()) == {"headline", "cma_movers", "rate_context", "starts_trend"}
+
+
+def test_llm_narrative_falls_back_when_provider_fails(monkeypatch):
+    stats = {
+        "headline": {
+            "nhpi": {"as_of": "2026-06-01", "yoy_pct": -1.0, "index": 120.0},
+            "boc_rate": {"overnight_target_pct": 2.5},
+            "housing_starts_12m_total": 200_000,
+        },
+        "cma_movers": {"top": [], "bottom": []},
+        "rate_context": {"change_30d_bps": 0},
+        "starts_trend": {"yoy_pct": 1.5},
+    }
+
+    class FailingCompletions:
+        @staticmethod
+        def create(**kwargs):
+            raise RuntimeError("provider unavailable")
+
+    class FakeOpenAI:
+        def __init__(self, **kwargs):
+            self.chat = type(
+                "Chat", (), {"completions": FailingCompletions()}
+            )()
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
+    monkeypatch.setattr("openai.OpenAI", FakeOpenAI)
+
+    sections = generate_digest._llm_narrative(stats)
+
+    assert [section["title"] for section in sections] == [
+        "What moved",
+        "Affordability lens",
+        "What to watch next",
+    ]

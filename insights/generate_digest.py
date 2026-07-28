@@ -69,20 +69,29 @@ def _llm_narrative(stats: dict) -> list[dict]:
         logger.warning("openai SDK not installed — using templated narrative fallback")
         return _fallback_narrative(stats)
 
-    client = OpenAI(api_key=api_key, base_url=DEEPSEEK_BASE_URL)
-    resp = client.chat.completions.create(
-        model=DEEPSEEK_MODEL,
-        max_tokens=900,
-        response_format={"type": "json_object"},
-        messages=[
-            {
-                "role": "user",
-                "content": NARRATIVE_PROMPT.format(stats_json=json.dumps(stats, indent=2)),
-            }
-        ],
-    )
-    parsed = json.loads(resp.choices[0].message.content)
-    return parsed["sections"]
+    try:
+        client = OpenAI(api_key=api_key, base_url=DEEPSEEK_BASE_URL)
+        resp = client.chat.completions.create(
+            model=DEEPSEEK_MODEL,
+            max_tokens=900,
+            response_format={"type": "json_object"},
+            messages=[
+                {
+                    "role": "user",
+                    "content": NARRATIVE_PROMPT.format(
+                        stats_json=json.dumps(stats, indent=2)
+                    ),
+                }
+            ],
+        )
+        parsed = json.loads(resp.choices[0].message.content)
+        return parsed["sections"]
+    except Exception as exc:
+        logger.warning(
+            "DeepSeek narrative generation failed (%s) — using templated fallback",
+            exc,
+        )
+        return _fallback_narrative(stats)
 
 
 def _fallback_narrative(stats: dict) -> list[dict]:

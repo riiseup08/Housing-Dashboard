@@ -1,75 +1,75 @@
 {
-  "month": "2026-05",
-  "generated_at": "2026-05-17T01:20:55.808409+00:00",
-  "subject": "Canadian Housing Monthly \u2014 May 2026",
+  "month": "2026-07",
+  "generated_at": "2026-07-28T16:47:54.005919+00:00",
+  "subject": "Canadian Housing Monthly \u2014 July 2026",
   "stats": {
     "headline": {
       "nhpi": {
-        "as_of": "2026-03-01",
-        "index": 121.6,
-        "yoy_pct": -2.33,
-        "mom_pct": -0.25
+        "as_of": "2026-06-01",
+        "index": 120.6,
+        "yoy_pct": -2.27,
+        "mom_pct": -0.08
       },
       "boc_rate": {
-        "as_of": "2026-05-13",
+        "as_of": "2026-07-27",
         "overnight_target_pct": 2.5,
         "bank_rate_pct": 2.25
       },
-      "housing_starts_12m_total": 737088
+      "housing_starts_12m_total": 716920
     },
     "cma_movers": {
       "top": [
         {
-          "geo": "Regina, Saskatchewan",
-          "yoy_pct": 5.87,
-          "index": 108.2
+          "geo": "Montr\u00e9al, Quebec",
+          "yoy_pct": 3.25,
+          "index": 158.9
         },
         {
           "geo": "Trois-Rivi\u00e8res, Quebec",
-          "yoy_pct": 3.36,
-          "index": 119.8
+          "yoy_pct": 3.02,
+          "index": 119.4
         },
         {
-          "geo": "Montr\u00e9al, Quebec",
-          "yoy_pct": 3.31,
-          "index": 159.0
-        },
-        {
-          "geo": "Sherbrooke, Quebec",
-          "yoy_pct": 2.84,
-          "index": 112.1
+          "geo": "Regina, Saskatchewan",
+          "yoy_pct": 2.66,
+          "index": 108.2
         },
         {
           "geo": "Saskatoon, Saskatchewan",
-          "yoy_pct": 2.82,
-          "index": 112.9
+          "yoy_pct": 2.52,
+          "index": 113.9
+        },
+        {
+          "geo": "Winnipeg, Manitoba",
+          "yoy_pct": 2.42,
+          "index": 148.0
         }
       ],
       "bottom": [
         {
-          "geo": "Toronto, Ontario",
-          "yoy_pct": -4.88,
-          "index": 107.1
-        },
-        {
           "geo": "Hamilton, Ontario",
-          "yoy_pct": -4.14,
-          "index": 108.9
-        },
-        {
-          "geo": "Kelowna, British Columbia",
-          "yoy_pct": -3.59,
-          "index": 118.2
+          "yoy_pct": -4.85,
+          "index": 108.0
         },
         {
           "geo": "Oshawa, Ontario",
-          "yoy_pct": -3.42,
-          "index": 115.7
+          "yoy_pct": -4.79,
+          "index": 113.3
         },
         {
-          "geo": "Kitchener-Cambridge-Waterloo, Ontario",
-          "yoy_pct": -3.2,
-          "index": 151.3
+          "geo": "Toronto, Ontario",
+          "yoy_pct": -4.5,
+          "index": 106.0
+        },
+        {
+          "geo": "Kelowna, British Columbia",
+          "yoy_pct": -4.33,
+          "index": 117.1
+        },
+        {
+          "geo": "Vancouver, British Columbia",
+          "yoy_pct": -3.23,
+          "index": 122.7
         }
       ]
     },
@@ -79,24 +79,24 @@
       "change_365d_bps": -50
     },
     "starts_trend": {
-      "rolling_12m_avg_current": 62418.5,
-      "rolling_12m_avg_year_ago": 57166.4,
-      "yoy_pct": 9.2
+      "rolling_12m_avg_current": 62647.3,
+      "rolling_12m_avg_year_ago": 69467.2,
+      "yoy_pct": -9.8
     }
   },
   "narrative": [
     {
       "title": "What moved",
-      "body": "The National House Price Index (NHPI) fell 2.33% year-over-year to 121.6 as of March 2026, with a monthly decline of 0.25%. Regional divergence persisted: Regina led gains at +5.87% year-over-year, while Toronto dropped 4.88%. Markets in Quebec notably outperformed, with Montreal up 3.31%."
+      "body": "The national NHPI is up -2.3% year-over-year as of 2026-06-01. Montr\u00e9al, Quebec led gains at +3.2%, while Hamilton, Ontario lagged at -4.8%."
     },
     {
       "title": "Affordability lens",
-      "body": "The Bank of Canada held its overnight rate at 2.5% in May, unchanged from last month but down 50 basis points from a year ago. Lower rates are helping borrowing costs, but the overall index decline suggests demand hasn't fully recovered. Housing starts averaged 62,419 over the past 12 months, 9.2% above the year-ago pace, signaling a gradual supply response."
+      "body": "Bank of Canada's overnight target sits at 2.50%, a +0 bp move over the trailing 30 days. Rate direction continues to anchor mortgage carrying costs and, by extension, affordability for new buyers."
     },
     {
       "title": "What to watch next",
-      "body": "With the rate decision unchanged, watchers will focus on Canadian GDP and employment data due in the coming weeks for clues on further cuts. The inventory of completed but unsold homes is still elevated in some regions, which could continue to weigh on prices. Also keep an eye on upcoming bank of Canada business outlook survey for sentiment."
+      "body": "Housing starts (12-month rolling) are -9.8% vs. a year ago. Track whether supply matches population growth \u2014 that gap remains the structural driver."
     }
   ],
-  "html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Canadian Housing Monthly \u2014 May 2026</title>\n</head>\n<body style=\"margin:0;padding:0;background:#f6f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;\">\n  <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"background:#f6f7fb;padding:24px 0;\">\n    <tr><td align=\"center\">\n      <table role=\"presentation\" width=\"640\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);\">\n\n        <tr><td style=\"padding:32px 32px 8px 32px;\">\n          <div style=\"font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#7a7f8c;\">Canadian Housing Monthly</div>\n          <h1 style=\"margin:8px 0 0 0;font-size:28px;line-height:1.2;color:#0d1b2a;\">May 2026</h1>\n          <div style=\"margin-top:4px;font-size:13px;color:#7a7f8c;\">Generated 2026-05-17 01:20 UTC \u00b7 Source: StatsCan, Bank of Canada, CMHC</div>\n        </td></tr>\n\n        <tr><td style=\"padding:24px 32px 8px 32px;\">\n          <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n            <tr>\n              <td width=\"33%\" valign=\"top\" style=\"padding:12px;background:#f0f3f9;border-radius:8px;\">\n                <div style=\"font-size:11px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;\">NHPI \u00b7 Canada</div>\n                <div style=\"font-size:22px;font-weight:600;color:#0d1b2a;margin-top:6px;\">121.6</div>\n                <div style=\"font-size:13px;color:#a8232a;margin-top:2px;\">-2.3% YoY</div>\n              </td>\n              <td width=\"6\"></td>\n              <td width=\"33%\" valign=\"top\" style=\"padding:12px;background:#f0f3f9;border-radius:8px;\">\n                <div style=\"font-size:11px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;\">BoC Overnight</div>\n                <div style=\"font-size:22px;font-weight:600;color:#0d1b2a;margin-top:6px;\">2.50%</div>\n                <div style=\"font-size:13px;color:#5a6172;margin-top:2px;\">+0 bps (30d)</div>\n              </td>\n              <td width=\"6\"></td>\n              <td width=\"33%\" valign=\"top\" style=\"padding:12px;background:#f0f3f9;border-radius:8px;\">\n                <div style=\"font-size:11px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;\">Starts \u00b7 12 mo total</div>\n                <div style=\"font-size:22px;font-weight:600;color:#0d1b2a;margin-top:6px;\">737,088</div>\n                <div style=\"font-size:13px;color:#5a6172;margin-top:2px;\">+9.2% vs prior 12mo</div>\n              </td>\n            </tr>\n          </table>\n        </td></tr>\n\n        \n        <tr><td style=\"padding:8px 32px;\">\n          <h2 style=\"margin:24px 0 8px 0;font-size:17px;color:#0d1b2a;\">What moved</h2>\n          <p style=\"margin:0;font-size:15px;line-height:1.6;color:#2c3340;\">The National House Price Index (NHPI) fell 2.33% year-over-year to 121.6 as of March 2026, with a monthly decline of 0.25%. Regional divergence persisted: Regina led gains at +5.87% year-over-year, while Toronto dropped 4.88%. Markets in Quebec notably outperformed, with Montreal up 3.31%.</p>\n        </td></tr>\n        \n        <tr><td style=\"padding:8px 32px;\">\n          <h2 style=\"margin:24px 0 8px 0;font-size:17px;color:#0d1b2a;\">Affordability lens</h2>\n          <p style=\"margin:0;font-size:15px;line-height:1.6;color:#2c3340;\">The Bank of Canada held its overnight rate at 2.5% in May, unchanged from last month but down 50 basis points from a year ago. Lower rates are helping borrowing costs, but the overall index decline suggests demand hasn&#39;t fully recovered. Housing starts averaged 62,419 over the past 12 months, 9.2% above the year-ago pace, signaling a gradual supply response.</p>\n        </td></tr>\n        \n        <tr><td style=\"padding:8px 32px;\">\n          <h2 style=\"margin:24px 0 8px 0;font-size:17px;color:#0d1b2a;\">What to watch next</h2>\n          <p style=\"margin:0;font-size:15px;line-height:1.6;color:#2c3340;\">With the rate decision unchanged, watchers will focus on Canadian GDP and employment data due in the coming weeks for clues on further cuts. The inventory of completed but unsold homes is still elevated in some regions, which could continue to weigh on prices. Also keep an eye on upcoming bank of Canada business outlook survey for sentiment.</p>\n        </td></tr>\n        \n\n        <tr><td style=\"padding:8px 32px;\">\n          <h2 style=\"margin:24px 0 8px 0;font-size:17px;color:#0d1b2a;\">Top &amp; bottom CMAs (YoY)</h2>\n          <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n            <tr>\n              <td width=\"49%\" valign=\"top\">\n                <div style=\"font-size:12px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;\">Top movers</div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Regina, Saskatchewan</span>\n                  <span style=\"color:#1b7a3f;font-weight:600;\">+5.9%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Trois-Rivi\u00e8res, Quebec</span>\n                  <span style=\"color:#1b7a3f;font-weight:600;\">+3.4%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Montr\u00e9al, Quebec</span>\n                  <span style=\"color:#1b7a3f;font-weight:600;\">+3.3%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Sherbrooke, Quebec</span>\n                  <span style=\"color:#1b7a3f;font-weight:600;\">+2.8%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Saskatoon, Saskatchewan</span>\n                  <span style=\"color:#1b7a3f;font-weight:600;\">+2.8%</span>\n                </div>\n                \n              </td>\n              <td width=\"2%\"></td>\n              <td width=\"49%\" valign=\"top\">\n                <div style=\"font-size:12px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;\">Bottom movers</div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Toronto, Ontario</span>\n                  <span style=\"color:#a8232a;font-weight:600;\">-4.9%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Hamilton, Ontario</span>\n                  <span style=\"color:#a8232a;font-weight:600;\">-4.1%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Kelowna, British Columbia</span>\n                  <span style=\"color:#a8232a;font-weight:600;\">-3.6%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Oshawa, Ontario</span>\n                  <span style=\"color:#a8232a;font-weight:600;\">-3.4%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Kitchener-Cambridge-Waterloo, Ontario</span>\n                  <span style=\"color:#a8232a;font-weight:600;\">-3.2%</span>\n                </div>\n                \n              </td>\n            </tr>\n          </table>\n        </td></tr>\n\n        <tr><td style=\"padding:24px 32px 32px 32px;border-top:1px solid #eef0f5;margin-top:16px;\">\n          <div style=\"font-size:12px;color:#7a7f8c;line-height:1.5;\">\n            This digest is generated automatically from the Canadian Housing Affordability data pipeline.\n            NHPI data carries a 2\u20133 month publication lag from Statistics Canada.\n            Reply to this email is not monitored.\n          </div>\n        </td></tr>\n\n      </table>\n    </td></tr>\n  </table>\n</body>\n</html>"
+  "html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Canadian Housing Monthly \u2014 July 2026</title>\n</head>\n<body style=\"margin:0;padding:0;background:#f6f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;\">\n  <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"background:#f6f7fb;padding:24px 0;\">\n    <tr><td align=\"center\">\n      <table role=\"presentation\" width=\"640\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);\">\n\n        <tr><td style=\"padding:32px 32px 8px 32px;\">\n          <div style=\"font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#7a7f8c;\">Canadian Housing Monthly</div>\n          <h1 style=\"margin:8px 0 0 0;font-size:28px;line-height:1.2;color:#0d1b2a;\">July 2026</h1>\n          <div style=\"margin-top:4px;font-size:13px;color:#7a7f8c;\">Generated 2026-07-28 16:47 UTC \u00b7 Source: StatsCan, Bank of Canada, CMHC</div>\n        </td></tr>\n\n        <tr><td style=\"padding:24px 32px 8px 32px;\">\n          <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n            <tr>\n              <td width=\"33%\" valign=\"top\" style=\"padding:12px;background:#f0f3f9;border-radius:8px;\">\n                <div style=\"font-size:11px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;\">NHPI \u00b7 Canada</div>\n                <div style=\"font-size:22px;font-weight:600;color:#0d1b2a;margin-top:6px;\">120.6</div>\n                <div style=\"font-size:13px;color:#a8232a;margin-top:2px;\">-2.3% YoY</div>\n              </td>\n              <td width=\"6\"></td>\n              <td width=\"33%\" valign=\"top\" style=\"padding:12px;background:#f0f3f9;border-radius:8px;\">\n                <div style=\"font-size:11px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;\">BoC Overnight</div>\n                <div style=\"font-size:22px;font-weight:600;color:#0d1b2a;margin-top:6px;\">2.50%</div>\n                <div style=\"font-size:13px;color:#5a6172;margin-top:2px;\">+0 bps (30d)</div>\n              </td>\n              <td width=\"6\"></td>\n              <td width=\"33%\" valign=\"top\" style=\"padding:12px;background:#f0f3f9;border-radius:8px;\">\n                <div style=\"font-size:11px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;\">Starts \u00b7 12 mo total</div>\n                <div style=\"font-size:22px;font-weight:600;color:#0d1b2a;margin-top:6px;\">716,920</div>\n                <div style=\"font-size:13px;color:#5a6172;margin-top:2px;\">-9.8% vs prior 12mo</div>\n              </td>\n            </tr>\n          </table>\n        </td></tr>\n\n        \n        <tr><td style=\"padding:8px 32px;\">\n          <h2 style=\"margin:24px 0 8px 0;font-size:17px;color:#0d1b2a;\">What moved</h2>\n          <p style=\"margin:0;font-size:15px;line-height:1.6;color:#2c3340;\">The national NHPI is up -2.3% year-over-year as of 2026-06-01. Montr\u00e9al, Quebec led gains at +3.2%, while Hamilton, Ontario lagged at -4.8%.</p>\n        </td></tr>\n        \n        <tr><td style=\"padding:8px 32px;\">\n          <h2 style=\"margin:24px 0 8px 0;font-size:17px;color:#0d1b2a;\">Affordability lens</h2>\n          <p style=\"margin:0;font-size:15px;line-height:1.6;color:#2c3340;\">Bank of Canada&#39;s overnight target sits at 2.50%, a +0 bp move over the trailing 30 days. Rate direction continues to anchor mortgage carrying costs and, by extension, affordability for new buyers.</p>\n        </td></tr>\n        \n        <tr><td style=\"padding:8px 32px;\">\n          <h2 style=\"margin:24px 0 8px 0;font-size:17px;color:#0d1b2a;\">What to watch next</h2>\n          <p style=\"margin:0;font-size:15px;line-height:1.6;color:#2c3340;\">Housing starts (12-month rolling) are -9.8% vs. a year ago. Track whether supply matches population growth \u2014 that gap remains the structural driver.</p>\n        </td></tr>\n        \n\n        <tr><td style=\"padding:8px 32px;\">\n          <h2 style=\"margin:24px 0 8px 0;font-size:17px;color:#0d1b2a;\">Top &amp; bottom CMAs (YoY)</h2>\n          <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n            <tr>\n              <td width=\"49%\" valign=\"top\">\n                <div style=\"font-size:12px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;\">Top movers</div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Montr\u00e9al, Quebec</span>\n                  <span style=\"color:#1b7a3f;font-weight:600;\">+3.2%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Trois-Rivi\u00e8res, Quebec</span>\n                  <span style=\"color:#1b7a3f;font-weight:600;\">+3.0%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Regina, Saskatchewan</span>\n                  <span style=\"color:#1b7a3f;font-weight:600;\">+2.7%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Saskatoon, Saskatchewan</span>\n                  <span style=\"color:#1b7a3f;font-weight:600;\">+2.5%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Winnipeg, Manitoba</span>\n                  <span style=\"color:#1b7a3f;font-weight:600;\">+2.4%</span>\n                </div>\n                \n              </td>\n              <td width=\"2%\"></td>\n              <td width=\"49%\" valign=\"top\">\n                <div style=\"font-size:12px;color:#5a6172;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;\">Bottom movers</div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Hamilton, Ontario</span>\n                  <span style=\"color:#a8232a;font-weight:600;\">-4.8%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Oshawa, Ontario</span>\n                  <span style=\"color:#a8232a;font-weight:600;\">-4.8%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Toronto, Ontario</span>\n                  <span style=\"color:#a8232a;font-weight:600;\">-4.5%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Kelowna, British Columbia</span>\n                  <span style=\"color:#a8232a;font-weight:600;\">-4.3%</span>\n                </div>\n                \n                <div style=\"display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eef0f5;font-size:14px;\">\n                  <span style=\"color:#2c3340;\">Vancouver, British Columbia</span>\n                  <span style=\"color:#a8232a;font-weight:600;\">-3.2%</span>\n                </div>\n                \n              </td>\n            </tr>\n          </table>\n        </td></tr>\n\n        <tr><td style=\"padding:24px 32px 32px 32px;border-top:1px solid #eef0f5;margin-top:16px;\">\n          <div style=\"font-size:12px;color:#7a7f8c;line-height:1.5;\">\n            This digest is generated automatically from the Canadian Housing Affordability data pipeline.\n            NHPI data carries a 2\u20133 month publication lag from Statistics Canada.\n            Reply to this email is not monitored.\n          </div>\n        </td></tr>\n\n      </table>\n    </td></tr>\n  </table>\n</body>\n</html>"
 }
