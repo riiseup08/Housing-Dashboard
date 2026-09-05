@@ -164,6 +164,18 @@ not share one blanket threshold.
 - Housing-start observations are quarterly and dated at the beginning of the
   quarter.
 - Geographic coverage differs across sources.
+- The dashboard compares housing starts with the same quarter a year earlier
+  and calculates a four-quarter average only when all four quarters are present.
+  These calculations include history before the selected display year.
+- Historical starts can contain multiple observations for one geography,
+  dwelling type, and quarter. The dashboard excludes these ambiguous records
+  with a visible warning rather than choosing or summing them. Resolving the
+  missing source dimensions in the extractor remains necessary for full history.
+- Starts charts use non-overlapping dwelling categories. The overview uses only
+  `Total units` across the latest four reported quarters, avoiding double counts.
+- Dashboard freshness indicators use the same source-specific limits as CI.
+  The warehouse's stored rolling metric and digest are separate from the
+  corrected dashboard calculation and still require a follow-up review.
 - The current dashboard is a housing-market conditions dashboard; direct
   affordability ratios remain planned work.
 
