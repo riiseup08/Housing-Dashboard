@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 load_dotenv()  # Reload .env file explicitly
 
 from config import DB_PATH, DB_TYPE, DB_CONNECTION_STRING
+from dashboard_metrics import price_volatility, quarterly_starts_metrics, freshness_label
 
 
 # ============================================================
@@ -236,30 +237,16 @@ def load_interest_rates(start_year=2015):
 @st.cache_data(ttl=3600)
 def load_housing_starts(geography='Canada', start_year=2015):
     """Load housing starts data."""
-    return execute_query("""
-        SELECT
-            d.full_date,
-            d.year,
-            d.month,
-            d.month_name,
-            hs.housing_type,
-            hs.starts_count,
-            hs.rolling_12m_avg,
-            100.0 * (hs.starts_count - LAG(hs.starts_count, 12) OVER (
-                PARTITION BY hs.geo_key, hs.housing_type
-                ORDER BY d.full_date
-            )) / NULLIF(LAG(hs.starts_count, 12) OVER (
-                PARTITION BY hs.geo_key, hs.housing_type
-                ORDER BY d.full_date
-            ), 0) as yoy_change_pct
+    frame = execute_query("""
+        SELECT d.full_date, d.year, d.month, d.month_name,
+               hs.housing_type, hs.starts_count
         FROM fact_housing_starts hs
         JOIN dim_date d ON hs.date_key = d.date_key
         JOIN dim_geography g ON hs.geo_key = g.geo_key
-        WHERE g.geo_name = ?
-          AND d.year >= ?
-          AND d.is_month_start = TRUE
+        WHERE g.geo_name = ? AND d.year >= ?
         ORDER BY d.full_date, hs.housing_type
-    """, [geography, start_year])
+    """, [geography, start_year - 1])
+    return quarterly_starts_metrics(frame, start_year)
 
 
 @st.cache_data(ttl=3600)
@@ -457,20 +444,15 @@ def _freshness():
     if DB_TYPE == 'duckdb':
         db_mtime = datetime.fromtimestamp(Path(DB_PATH).stat().st_mtime)
     else:
-        db_mtime = datetime.now()  # For PostgreSQL, use current time
+        db_mtime = None  # A query timestamp is not the database build time
     return rows, db_mtime
 
 
 _fresh_rows, _db_mtime = _freshness()
 for _, row in _fresh_rows.iterrows():
-    latest = pd.to_datetime(row['latest'])
-    age_days = (pd.Timestamp(datetime.now().date()) - latest.normalize()).days
-    icon = "🟢" if age_days <= 45 else ("🟡" if age_days <= 120 else "🔴")
-    st.sidebar.markdown(
-        f"{icon} **{row['source']}**: {latest.strftime('%b %Y')} "
-        f"_(age: {age_days}d)_"
-    )
-st.sidebar.caption(f"DB built {_db_mtime.strftime('%Y-%m-%d %H:%M')}")
+    st.sidebar.markdown(freshness_label(row['source'], row['latest']))
+if _db_mtime is not None:
+    st.sidebar.caption(f"DB file updated {_db_mtime.strftime('%Y-%m-%d %H:%M')}")
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Data Sources")
@@ -527,24 +509,34 @@ if page == "📊 Overview":
     with col4:
         # Get housing starts for Canada in last 12 months
         recent_starts_df = execute_query("""
-            SELECT SUM(hs.starts_count) as total
-            FROM fact_housing_starts hs
-            JOIN dim_date d ON hs.date_key = d.date_key
-            JOIN dim_geography g ON hs.geo_key = g.geo_key
-            WHERE g.geo_name = 'Canada'
-              AND d.full_date >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '12 months'
+            WITH quarters AS (
+                SELECT d.full_date, hs.starts_count
+                FROM fact_housing_starts hs
+                JOIN dim_date d ON hs.date_key = d.date_key
+                JOIN dim_geography g ON hs.geo_key = g.geo_key
+                WHERE g.geo_name = 'Canada' AND hs.housing_type = 'Total units'
+            ), latest AS (SELECT MAX(full_date) AS last_date FROM quarters)
+            SELECT CASE WHEN COUNT(*) = 4 AND COUNT(DISTINCT full_date) = 4
+                        THEN SUM(starts_count) END AS total,
+                   MAX(full_date) AS data_date
+            FROM quarters, latest
+            WHERE full_date > last_date - INTERVAL '12 months'
         """)
-        recent_starts = recent_starts_df.iloc[0]['total'] if len(recent_starts_df) > 0 else None
+        recent_starts = recent_starts_df.iloc[0]['total']
         st.metric(
-            label="🏗️ Housing Starts (12mo)",
-            value=f"{int(recent_starts):,}" if recent_starts else "N/A",
-            help="Total new housing units started in Canada over the last 12 months."
+            label="🏗️ Housing Starts (4 quarters)",
+            value=f"{int(recent_starts):,}" if pd.notna(recent_starts) else "N/A",
+            help="Total units over the latest four reported quarters; components are not added to totals."
         )
+        starts_date = recent_starts_df.iloc[0]['data_date']
+        if pd.notna(starts_date):
+            quarter = pd.Timestamp(starts_date).to_period('Q')
+            st.caption(f"Through {quarter}")
     
     st.markdown("---")
     
     # Recent trends
-    st.subheader("Recent Trends (Last 24 Months)")
+    st.subheader("Trends in Selected Time Range")
     st.markdown("*Compare housing price movements and interest rate changes across major markets*")
     
     col1, col2 = st.columns(2)
@@ -777,14 +769,9 @@ elif page == "📈 Housing Prices":
         with col2:
             # Volatility chart (rolling std)
             st.subheader("Price Volatility")
-            for nhpi_type in df_filtered['nhpi_type'].unique():
-                subset = df_filtered[df_filtered['nhpi_type'] == nhpi_type].sort_values('full_date')
-                subset['rolling_std'] = subset['index_value'].rolling(window=12).std()
-            
+            volatility = price_volatility(df_filtered)
             fig = px.line(
-                df_filtered[df_filtered['rolling_std'].notna()].assign(
-                    rolling_std=lambda x: x.groupby('nhpi_type')['index_value'].transform(lambda y: y.rolling(12).std())
-                ),
+                volatility.dropna(subset=['rolling_std']),
                 x='full_date',
                 y='rolling_std',
                 color='nhpi_type',
@@ -948,6 +935,14 @@ elif page == "🏗️ Housing Starts":
         selected_geo = st.selectbox("Select CMA", cmas)
     
     df_starts = load_housing_starts(selected_geo, start_year)
+    if df_starts.attrs.get('excluded_ambiguous_rows', 0):
+        st.warning("Some historical quarters have multiple observations per dwelling type. These ambiguous records are excluded; trends and annual totals may have gaps.")
+    st.caption("Quarterly observations. Dates mark the start of each quarter; annual totals may cover only part of a year.")
+    # Total units and Multiples overlap with their component dwelling types.
+    components = ['Single-detached', 'Semi-detached', 'Row', 'Apartment and other unit type']
+    available = [kind for kind in components if kind in df_starts['housing_type'].unique()]
+    if available:
+        df_starts = df_starts[df_starts['housing_type'].isin(available)]
     
     if df_starts.empty:
         st.warning(f"No data available for {selected_geo}")
@@ -959,7 +954,7 @@ elif page == "🏗️ Housing Starts":
             x='full_date',
             y='starts_count',
             color='housing_type',
-            title=f'Monthly Housing Starts ({start_year}-Present)',
+            title=f'Quarterly Housing Starts ({start_year}-Present)',
             labels={'full_date': 'Date', 'starts_count': 'Units', 'housing_type': 'Type'},
             barmode='stack'
         )
@@ -986,13 +981,13 @@ elif page == "🏗️ Housing Starts":
         
         with col2:
             # Rolling 12-month average
-            st.subheader("12-Month Rolling Average")
+            st.subheader("Four-Quarter Rolling Average")
             fig = px.line(
                 df_starts[df_starts['rolling_12m_avg'].notna()],
                 x='full_date',
                 y='rolling_12m_avg',
                 color='housing_type',
-                title='Smoothed Trend (12-Month Avg)',
+                title='Average Quarterly Starts (Four Quarters)',
                 labels={'full_date': 'Date', 'rolling_12m_avg': 'Avg Units', 'housing_type': 'Type'}
             )
             fig.update_layout(hovermode='x unified', height=400)
@@ -1033,7 +1028,8 @@ elif page == "🏗️ Housing Starts":
             # Seasonality analysis
             st.subheader("Seasonality Pattern")
             df_starts_monthly = df_starts.copy()
-            df_starts_monthly['month_num'] = df_starts_monthly['month']
+            df_starts_monthly['month_num'] = (df_starts_monthly['month'] - 1) // 3 + 1
+            df_starts_monthly['month_name'] = 'Q' + df_starts_monthly['month_num'].astype(str)
             df_seasonal = df_starts_monthly.groupby(['month_num', 'month_name'])['starts_count'].mean().reset_index()
             df_seasonal = df_seasonal.sort_values('month_num')
             
@@ -1041,8 +1037,8 @@ elif page == "🏗️ Housing Starts":
                 df_seasonal,
                 x='month_name',
                 y='starts_count',
-                title='Average Starts by Month',
-                labels={'month_name': 'Month', 'starts_count': 'Avg Units'}
+                title='Average Starts by Quarter and Dwelling Type',
+                labels={'month_name': 'Quarter', 'starts_count': 'Avg Units'}
             )
             fig.update_layout(height=400, xaxis={'categoryorder': 'array', 'categoryarray': df_seasonal['month_name'].tolist()})
             st.plotly_chart(fig, use_container_width=True)
