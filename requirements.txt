@@ -11,7 +11,7 @@ openai>=1.40   # used as a DeepSeek client via base_url override
 jinja2>=3.1
 
 # Database drivers
-psycopg2-binary>=2.9.9  # PostgreSQL adapter for cloud deployment
+psycopg[binary]>=3.2  # PostgreSQL adapter for cloud deployment
 
 # AI Agent dependencies
 langchain>=0.1.0
